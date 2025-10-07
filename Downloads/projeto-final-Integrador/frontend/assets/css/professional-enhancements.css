@@ -1,0 +1,315 @@
+/* ===== MELHORIAS PROFISSIONAIS ADICIONAIS ===== */
+
+/* Efeitos de hover avançados */
+.category-item,
+.service-card,
+.step-item {
+    position: relative;
+    overflow: hidden;
+}
+
+.category-item::after,
+.service-card::after,
+.step-item::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at center, rgba(59, 130, 246, 0.05) 0%, transparent 70%);
+    opacity: 0;
+    transition: opacity var(--transition-base);
+    pointer-events: none;
+}
+
+.category-item:hover::after,
+.service-card:hover::after,
+.step-item:hover::after {
+    opacity: 1;
+}
+
+/* Gradientes animados */
+@keyframes gradientShift {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.btn-hero-primary,
+.btn-cadastrar,
+.newsletter-btn {
+    background-size: 200% 200%;
+    animation: gradientShift 3s ease infinite;
+}
+
+/* Efeitos de partículas */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 40% 40%, rgba(120, 219, 255, 0.3) 0%, transparent 50%);
+    z-index: 1;
+    animation: float 6s ease-in-out infinite;
+}
+
+/* Sombras dinâmicas */
+.service-card:hover,
+.category-item:hover {
+    box-shadow: 
+        0 20px 40px rgba(59, 130, 246, 0.1),
+        0 10px 20px rgba(0, 0, 0, 0.1),
+        0 0 0 1px rgba(59, 130, 246, 0.05);
+}
+
+/* Tipografia melhorada */
+.section-title {
+    position: relative;
+    display: inline-block;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-full);
+}
+
+/* Efeitos de loading melhorados */
+.loading-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+/* Micro-interações */
+.btn-service,
+.btn-hero-primary,
+.btn-hero-secondary {
+    transform-style: preserve-3d;
+    transition: all var(--transition-base);
+}
+
+.btn-service:active,
+.btn-hero-primary:active,
+.btn-hero-secondary:active {
+    transform: translateY(2px) scale(0.98);
+}
+
+
+
+/* Melhorias no contraste */
+.service-content h3,
+.category-item span,
+.step-item h3 {
+    color: var(--gray-900);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+/* Efeitos de glassmorphism */
+.newsletter-form,
+.service-badge {
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Animações de entrada */
+@keyframes slideInFromLeft {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes slideInFromRight {
+    from {
+        opacity: 0;
+        transform: translateX(50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.slide-in-left {
+    animation: slideInFromLeft 0.8s ease-out;
+}
+
+.slide-in-right {
+    animation: slideInFromRight 0.8s ease-out;
+}
+
+/* Efeitos de hover nos links */
+.nav-link,
+.footer a {
+    position: relative;
+    transition: all var(--transition-base);
+}
+
+.nav-link:hover,
+.footer a:hover {
+    text-shadow: 0 0 8px rgba(59, 130, 246, 0.3);
+}
+
+/* Melhorias na acessibilidade */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Focus states melhorados */
+.btn-service:focus,
+.btn-hero-primary:focus,
+.btn-hero-secondary:focus,
+.newsletter-btn:focus {
+    outline: 3px solid rgba(59, 130, 246, 0.5);
+    outline-offset: 2px;
+}
+
+/* Efeitos de parallax sutil */
+@media (min-width: 1024px) {
+    .hero-content {
+        transform: translateZ(0);
+        will-change: transform;
+    }
+    
+    .parallax-element {
+        transform: translateZ(0);
+        transition: transform 0.1s ease-out;
+    }
+}
+
+/* Melhorias no sistema de cores */
+:root {
+    --gradient-warm: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --gradient-cool: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    --gradient-nature: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+/* Estados de carregamento */
+.skeleton-loader {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% {
+        background-position: 200% 0;
+    }
+    100% {
+        background-position: -200% 0;
+    }
+}
+
+/* Efeitos de borda animada */
+.animated-border {
+    position: relative;
+    background: var(--bg-primary);
+    border-radius: var(--radius-xl);
+}
+
+.animated-border::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: var(--radius-xl);
+    padding: 2px;
+    background: linear-gradient(45deg, var(--primary-500), var(--primary-300), var(--primary-600), var(--primary-500));
+    background-size: 300% 300%;
+    mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+    mask-composite: xor;
+    -webkit-mask-composite: xor;
+    animation: borderAnimation 3s ease infinite;
+}
+
+@keyframes borderAnimation {
+    0%, 100% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+}
+
+/* Melhorias na responsividade */
+@media (max-width: 480px) {
+    .hero-text h1 {
+        font-size: 2rem;
+        line-height: 1.2;
+    }
+    
+    .section-title {
+        font-size: 1.8rem;
+    }
+    
+    .service-content,
+    .category-item {
+        padding: var(--space-lg);
+    }
+}
+
+/* Otimizações de performance */
+.gpu-accelerated {
+    transform: translateZ(0);
+    will-change: transform;
+}
+
+.smooth-scroll {
+    scroll-behavior: smooth;
+}
+
+/* Estados de erro e sucesso */
+.error-state {
+    color: var(--error-500);
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+}
+
+.success-state {
+    color: var(--success-600);
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    padding: var(--space-lg);
+    border-radius: var(--radius-lg);
+}
