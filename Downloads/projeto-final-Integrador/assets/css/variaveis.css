@@ -1,0 +1,32 @@
+/* Cores personalizadas do projeto */
+:root {
+  /* Cores principais */
+  --cor-azul-principal: #2563EB;
+  --cor-azul-royal: #1E40AF;
+  --cor-cinza-escuro: #1E293B;
+  --cor-preto: #0F172A;
+  --cor-branco: #FFFFFF;
+
+  /* Cores originais mantidas para compatibilidade */
+  --cor-gelo: #f1f3f8;
+  --cor-azul: #2563EB; /* Atualizado para a nova cor principal */
+  --cor-azul-escuro: #1E40AF; /* Atualizado para azul royal */
+  --cor-laranja: #ff8b41;
+  --cor-laranja-escuro: #b65b22;
+  --cor-cinza: #646676;
+  --cor-cinza-2: #c3c7cd;
+  --cor-cinza-3: #dfe1e5;
+
+  --light: 'figtree-light';
+  --regular: 'figtree-regular';
+  --bold: 'figtree-bold';
+
+  --f0: clamp(0.6rem, 1vw, 0.8rem);
+  --f1: clamp(0.8rem, 1vw, 1rem);
+  --f2: clamp(1rem, 1vw, 1.2rem);
+  --f3: clamp(1.2rem, 1vw, 1.5rem);
+  --f4: clamp(1.5rem, 1vw, 2rem);
+  --f5: clamp(2rem, 1vw, 2.5rem);
+  --f6: clamp(2.5rem, 1vw, 3.5rem);
+  --f7: clamp(3.5rem, 1vw, 5.5rem);
+}

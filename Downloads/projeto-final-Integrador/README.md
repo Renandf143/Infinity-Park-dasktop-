@@ -1,136 +1,167 @@
-# Serviflix-Web
+# 🚀 Serviflix - Plataforma de Serviços Autônomos
 
-Uma plataforma web para conectar prestadores de serviços com clientes, oferecendo uma experiência completa de agendamento e avaliação de serviços.
+**Serviflix** é uma plataforma inovadora desenvolvida em **NuxtJS 3** que conecta profissionais autônomos a clientes, facilitando a contratação de serviços de reparos, limpeza, tecnologia, beleza e muito mais.
 
-## 🚀 Tecnologias
+---
 
-### Frontend
-- **Nuxt.js 3** - Framework Vue.js para aplicações web
-- **Tailwind CSS** - Framework CSS utilitário
-- **Supabase** - Backend-as-a-Service para autenticação e banco de dados
+## 📖 Documentação
 
-### Backend
-- **Django** - Framework web Python
-- **SQLite** - Banco de dados para desenvolvimento
-- **Django REST Framework** - API REST
+Para mais informações sobre o framework utilizado, consulte a **[documentação oficial do Nuxt 3](https://nuxt.com/docs/getting-started/introduction)**.
 
-## 📁 Estrutura do Projeto
+---
 
-```
-serviflix-web/
-├── frontend/           # Aplicação Nuxt.js
-│   ├── components/     # Componentes Vue
-│   ├── pages/         # Páginas da aplicação
-│   ├── composables/   # Composables Vue
-│   ├── layouts/       # Layouts da aplicação
-│   └── ...
-├── backend/           # API Django
-│   ├── accounts/      # Sistema de usuários
-│   ├── bookings/      # Sistema de agendamentos
-│   ├── services/      # Gerenciamento de serviços
-│   ├── reviews/       # Sistema de avaliações
-│   └── ...
-└── assets/           # Recursos estáticos
-    ├── imagem/       # Imagens
-    └── videos/       # Vídeos
+## ⚡ Setup Rápido
+
+Antes de começar, certifique-se de instalar as dependências do projeto com:
+
+```sh
+pnpm install
 ```
 
-## 🛠️ Configuração do Ambiente
+---
 
-### Pré-requisitos
-- Node.js 18+ 
-- Python 3.8+
-- Git
+## 🛠️ Desenvolvimento
 
-### Frontend (Nuxt.js)
+Para iniciar o servidor localmente em **http://localhost:3000**, utilize:
 
-1. Navegue até a pasta frontend:
-```bash
-cd frontend
+```sh
+pnpm run dev
 ```
 
-2. Instale as dependências:
-```bash
-npm install
+---
+
+## 🚀 Produção
+
+### 📦 Criando o Build
+
+Para gerar os arquivos otimizados para produção:
+
+```sh
+pnpm run generate
 ```
 
-3. Configure as variáveis de ambiente:
-```bash
-cp .env.example .env
+Os arquivos serão gerados na pasta **/dist**.
+
+### 🔍 Visualizando o Build Localmente
+
+Se quiser testar o build de produção antes de fazer o deploy:
+
+```sh
+pnpm run preview
 ```
 
-4. Execute o servidor de desenvolvimento:
-```bash
-npm run dev
+---
+
+## 🌍 Deploy
+
+Para publicar seu projeto, confira a **[documentação de deployment do Nuxt 3](https://nuxt.com/docs/getting-started/deployment)**.
+
+---
+
+## ✨ Funcionalidades
+
+### 🔐 Sistema de Autenticação Completo
+- **Login/Cadastro** com email e senha
+- **Autenticação Google** integrada
+- **Recuperação de senha** via email
+- **Verificação de email** obrigatória
+- **Middlewares de segurança** para proteção de rotas
+
+### 👥 Tipos de Usuário
+- **👤 Cliente**: Para quem quer contratar serviços
+- **🧑‍🔧 Profissional**: Para quem quer oferecer serviços
+- **🏢 Empresa**: Para empresas que querem divulgar serviços
+
+### 🛡️ Segurança
+- **Firebase Authentication** integrado
+- **Validação de senhas fortes** (8+ caracteres, maiúscula, minúscula, número)
+- **Proteção de rotas** com middlewares
+- **Verificação de email** obrigatória
+- **Tratamento de erros** em português
+
+### 🎨 Interface
+- **Design responsivo** para todos os dispositivos
+- **Componentes reutilizáveis** e organizados
+- **Feedback visual** claro para o usuário
+- **Loading states** em todas as ações
+
+## 📂 Estrutura do Projeto
+
+- 📁 **`assets/`** → Imagens, fontes e estilos CSS globais
+- 📁 **`components/`** → Componentes Vue reutilizáveis (Nav, Footer, etc.)
+- 📁 **`composables/`** → Lógica de autenticação Firebase e serviços
+- 📁 **`middleware/`** → Proteção de rotas (auth, email-verified)
+- 📁 **`pages/`** → Páginas da aplicação (login, cadastro, dashboards)
+- 📁 **`plugins/`** → Configuração do Firebase
+- 📁 **`server/api/`** → APIs do backend (sincronização de usuários)
+- 📁 **`stores/`** → Gerenciamento de estado com Pinia
+- 📝 **`nuxt.config.ts`** → Configurações do Nuxt e Firebase
+
+---
+
+## ⚙️ Scripts Disponíveis
+
+Comandos úteis para desenvolvimento e produção:
+
+- `pnpm run dev` → Inicia o servidor de desenvolvimento
+- `pnpm run build` → Gera o build para produção
+- `pnpm run generate` → Gera versão estática
+- `pnpm run preview` → Visualiza o build localmente
+- `pnpm run db:migrate` → Executa migrações do banco
+- `pnpm run db:seed` → Popula o banco com dados iniciais
+- `pnpm run db:studio` → Abre o Prisma Studio
+
+## 🔧 Configuração
+
+### Variáveis de Ambiente
+
+Crie um arquivo `.env` na raiz do projeto com as seguintes variáveis:
+
+```env
+# Database
+DATABASE_URL="postgresql://username:password@localhost:5432/serviflix"
+
+# Firebase Configuration
+FIREBASE_API_KEY="sua-api-key"
+FIREBASE_AUTH_DOMAIN="seu-projeto.firebaseapp.com"
+FIREBASE_PROJECT_ID="seu-projeto-id"
+# ... outras configurações do Firebase
+
+# JWT Secret
+JWT_SECRET="sua-chave-secreta-jwt"
+
+# Ambiente
+NODE_ENV="development"
+NUXT_PUBLIC_SITE_URL="http://localhost:3000"
 ```
 
-O frontend estará disponível em `http://localhost:3000`
+### Configuração do Firebase
 
-### Backend (Django)
+1. Crie um projeto no [Firebase Console](https://console.firebase.google.com/)
+2. Ative o **Authentication** com Email/Senha e Google
+3. Configure o **Firestore Database**
+4. Adicione as credenciais no arquivo `.env`
 
-1. Navegue até a pasta backend:
-```bash
-cd backend
-```
+## 🚀 Deploy
 
-2. Crie um ambiente virtual:
-```bash
-python -m venv venv
-source venv/bin/activate  # Linux/Mac
-# ou
-venv\Scripts\activate     # Windows
-```
+O projeto está configurado para deploy em:
+- **Vercel** (recomendado para Nuxt)
+- **Netlify**
+- **Firebase Hosting**
 
-3. Instale as dependências:
-```bash
-pip install -r requirements.txt
-```
+Para mais informações, consulte a [documentação de deployment do Nuxt 3](https://nuxt.com/docs/getting-started/deployment).
 
-4. Configure as variáveis de ambiente:
-```bash
-cp .env.example .env
-```
+---
 
-5. Execute as migrações:
-```bash
-python manage.py migrate
-```
+## 📱 Tecnologias Utilizadas
 
-6. Inicie o servidor:
-```bash
-python manage.py runserver
-```
+- **⚡ Nuxt 3** - Framework Vue.js full-stack
+- **🔥 Firebase** - Autenticação e banco de dados
+- **🗃️ Prisma** - ORM para banco de dados
+- **🎨 CSS Custom Properties** - Estilização personalizada
+- **📱 Design Responsivo** - Mobile-first approach
+- **🛡️ TypeScript** - Tipagem estática
 
-A API estará disponível em `http://localhost:8000`
+---
 
-## 🔧 Configuração do Supabase
-
-O projeto utiliza Supabase para autenticação e banco de dados. Consulte os arquivos de configuração:
-
-- `frontend/SUPABASE_SETUP.md` - Guia de configuração
-- `supabase_tables.sql` - Estrutura das tabelas
-- `supabase_security_policies.sql` - Políticas de segurança
-- `supabase_initial_data.sql` - Dados iniciais
-
-## 📚 Documentação Adicional
-
-- `CONFIGURACAO_GOOGLE_OAUTH.md` - Configuração do OAuth Google
-- `frontend/README-EMAIL-SYSTEM.md` - Sistema de emails
-- `NOVA_PAGINA_INICIAL.md` - Especificações da página inicial
-- `RESPONSIVIDADE_CORRIGIDA.md` - Correções de responsividade
-
-## 🤝 Contribuindo
-
-1. Faça um fork do projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/AmazingFeature`)
-3. Commit suas mudanças (`git commit -m 'Add some AmazingFeature'`)
-4. Push para a branch (`git push origin feature/AmazingFeature`)
-5. Abra um Pull Request
-
-## 📝 Licença
-
-Este projeto está sob a licença MIT. Veja o arquivo `LICENSE` para mais detalhes.
-
-## 📞 Contato
-
-Para dúvidas ou sugestões, entre em contato através do GitHub.
+🔥 **Serviflix - Conectando talentos a oportunidades reais!** 🚀
