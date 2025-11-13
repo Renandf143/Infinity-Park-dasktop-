@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { App } from "./App";
 import { AuthProvider } from "./contexts/AuthContext";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Login } from "./pages/Login";
 import { Register } from "./pages/Register";
 import { ForgotPassword } from "./pages/ForgotPassword";
@@ -25,8 +26,9 @@ import { ProfessionalServicesPage } from "./pages/professional/ProfessionalServi
 export function AppRouter() {
   return (
     <BrowserRouter>
-      <AuthProvider>
-        <Routes>
+      <ErrorBoundary>
+        <AuthProvider>
+          <Routes>
           <Route path="/" element={<App />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -106,7 +108,8 @@ export function AppRouter() {
             }
           />
         </Routes>
-      </AuthProvider>
+        </AuthProvider>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

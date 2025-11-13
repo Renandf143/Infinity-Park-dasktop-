@@ -4,21 +4,24 @@ import {
   BadgeCheckIcon,
   MapPinIcon,
   Loader2Icon,
+  Clock,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { professionalService } from "../services/professionalService";
+import { AvailabilityFilter } from "./AvailabilityFilter";
 
 export function Professionals() {
   const navigate = useNavigate();
   const scrollRef = useRef<HTMLDivElement>(null);
   const [professionals, setProfessionals] = useState<unknown[]>([]);
   const [loading, setLoading] = useState(true);
+  const [filterByAvailability, setFilterByAvailability] = useState(false);
 
   // Carregar profissionais reais do Firestore
   useEffect(() => {
     loadProfessionals();
-  }, []);
+  }, [filterByAvailability]);
 
   const loadProfessionals = async () => {
     setLoading(true);
@@ -33,7 +36,7 @@ export function Professionals() {
       );
 
       const querySnapshot = await getDocs(professionalsQuery);
-      const professionalsData = querySnapshot.docs.map((doc) => ({
+      let professionalsData = querySnapshot.docs.map((doc) => ({
         id: doc.id,
         name: doc.data().displayName || "Profissional",
         profession: doc.data().profession || "Serviços Gerais",
@@ -45,6 +48,19 @@ export function Professionals() {
         profileImage: doc.data().photoUrl || null,
         ...doc.data(),
       }));
+
+      // Filtrar por disponibilidade se ativado
+      if (filterByAvailability) {
+        const availableIds = [];
+        for (const pro of professionalsData) {
+          const isAvailable = await professionalService.isProfessionalAvailableToday(pro.id);
+          if (isAvailable) {
+            availableIds.push(pro.id);
+          }
+        }
+        professionalsData = professionalsData.filter(pro => availableIds.includes(pro.id));
+        console.log(`✅ ${professionalsData.length} profissionais disponíveis hoje`);
+      }
 
       // Ordenar manualmente por rating
       professionalsData.sort((a, b) => b.rating - a.rating);
@@ -92,7 +108,7 @@ export function Professionals() {
           viewport={{
             once: true,
           }}
-          className="text-center mb-16"
+          className="text-center mb-8"
         >
           <div className="inline-block px-6 py-2 bg-blue-100 rounded-full mb-6">
             <span className="text-blue-600 font-semibold text-sm uppercase tracking-wide">
@@ -106,6 +122,14 @@ export function Professionals() {
             Conecte-se com especialistas verificados e altamente avaliados
           </p>
         </motion.div>
+        
+        {/* Filtro de Disponibilidade */}
+        <div className="max-w-2xl mx-auto mb-12">
+          <AvailabilityFilter
+            filterByAvailability={filterByAvailability}
+            onToggle={setFilterByAvailability}
+          />
+        </div>
         {/* Loading State */}
         {loading ? (
           <div className="text-center py-20">
@@ -155,6 +179,14 @@ export function Professionals() {
                   >
                     <div className="relative">
                       <div className="absolute inset-0 bg-gradient-to-t from-[#1E293B]/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                      {filterByAvailability && (
+                        <div className="absolute top-4 right-4 z-10">
+                          <div className="bg-green-500 text-white px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 shadow-lg">
+                            <Clock className="w-3 h-3" />
+                            Disponível Hoje
+                          </div>
+                        </div>
+                      )}
                       <div className="p-6">
                         <div className="flex items-start gap-4">
                           <div className="relative">

@@ -1,143 +1,183 @@
-import { addDoc, collection, Timestamp } from "firebase/firestore";
-import { db } from "../firebase";
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
+import { db } from '../firebase';
 
-/**
- * Serviço para envio de emails
- * Os emails são enviados através de Cloud Functions que monitoram a coleção 'emailQueue'
- */
-
-interface EmailData {
-  to: string;
+interface ContactFormData {
+  name: string;
+  email: string;
+  phone: string;
   subject: string;
-  html: string;
-  from?: string;
+  message: string;
 }
 
 class EmailService {
-  private readonly EMAIL_QUEUE_COLLECTION = "emailQueue";
+  private readonly companyEmail = import.meta.env.VITE_COMPANY_EMAIL || 'suporteserviflix@gmail.com';
 
   /**
-   * Envia um email adicionando à fila de processamento
+   * Enviar mensagem de contato
    */
-  async sendEmail(emailData: EmailData): Promise<string> {
+  async sendContactMessage(data: ContactFormData): Promise<boolean> {
     try {
-      const docRef = await addDoc(collection(db, this.EMAIL_QUEUE_COLLECTION), {
-        ...emailData,
-        from: emailData.from || "ServiFlex <noreply@serviflex.com>",
-        createdAt: Timestamp.now(),
-        processed: false,
-        attempts: 0,
+      console.log('📧 Enviando mensagem de contato...');
+
+      // Salvar no Firestore (coleção de mensagens de contato)
+      await addDoc(collection(db, 'contactMessages'), {
+        ...data,
+        status: 'pending',
+        createdAt: serverTimestamp(),
+        readAt: null,
       });
 
-      console.log("✅ Email adicionado à fila:", docRef.id);
-      return docRef.id;
+      console.log('✅ Mensagem salva no Firestore');
+
+      // Tentar enviar email via Cloud Function (se existir)
+      try {
+        const response = await fetch('/api/send-contact-email', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            to: this.companyEmail,
+            from: data.email,
+            subject: `[Contato] ${data.subject}`,
+            html: this.generateEmailHTML(data),
+          }),
+        });
+
+        if (response.ok) {
+          console.log('✅ Email enviado com sucesso');
+        } else {
+          console.warn('⚠️ Erro ao enviar email, mas mensagem foi salva');
+        }
+      } catch (emailError) {
+        console.warn('⚠️ Serviço de email não disponível, mas mensagem foi salva:', emailError);
+      }
+
+      return true;
     } catch (error) {
-      console.error("❌ Erro ao adicionar email à fila:", error);
-      throw error;
+      console.error('❌ Erro ao enviar mensagem:', error);
+      return false;
     }
   }
 
   /**
-   * Envia email de cancelamento de serviço
-   * NOTA: Requer Firebase Functions (plano Blaze pago)
-   * Alternativa: Use emailSender.ts com EmailJS (gratuito)
+   * Gerar HTML do email
    */
-  async sendCancellationEmail(
-    professionalEmail: string,
-    professionalName: string,
-    clientName: string,
-    serviceType: string,
-    reason: string
-  ): Promise<void> {
-    const subject = "❌ Solicitação de Serviço Cancelada - ServiFlex";
-
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 30px; text-align: center;">
-          <h1 style="color: white; margin: 0;">❌ Serviço Cancelado</h1>
-        </div>
-        <div style="padding: 30px; background: #f9fafb;">
-          <h2 style="color: #1f2937;">Olá ${professionalName},</h2>
-          <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-            Informamos que <strong>${clientName}</strong> cancelou a solicitação do serviço de <strong>${serviceType}</strong>.
-          </p>
-          <div style="background: #fee2e2; border-left: 4px solid #ef4444; padding: 15px; margin: 20px 0; border-radius: 8px;">
-            <p style="color: #991b1b; margin: 0;">
-              <strong>Motivo do cancelamento:</strong><br>
-              ${reason}
-            </p>
+  private generateEmailHTML(data: ContactFormData): string {
+    return `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>
+          body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #333;
+          }
+          .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+          }
+          .header {
+            background: linear-gradient(135deg, #2563EB 0%, #1E40AF 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+            border-radius: 10px 10px 0 0;
+          }
+          .content {
+            background: white;
+            padding: 30px;
+            border-radius: 0 0 10px 10px;
+          }
+          .field {
+            margin-bottom: 20px;
+          }
+          .label {
+            font-weight: bold;
+            color: #2563EB;
+            margin-bottom: 5px;
+          }
+          .value {
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-left: 3px solid #2563EB;
+            border-radius: 5px;
+          }
+          .footer {
+            text-align: center;
+            margin-top: 20px;
+            color: #666;
+            font-size: 12px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>📧 Nova Mensagem de Contato</h1>
+            <p>ServiFlex - Plataforma de Serviços</p>
           </div>
-          <p style="color: #6b7280; font-size: 14px; line-height: 1.6;">
-            Não se preocupe! Você continuará recebendo novas solicitações de serviço através da plataforma.
-          </p>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="https://serviflex.com/profissional/servicos" 
-               style="background: #2563EB; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
-              Ver Minhas Solicitações
-            </a>
+          <div class="content">
+            <div class="field">
+              <div class="label">👤 Nome:</div>
+              <div class="value">${data.name}</div>
+            </div>
+            
+            <div class="field">
+              <div class="label">📧 Email:</div>
+              <div class="value">${data.email}</div>
+            </div>
+            
+            ${data.phone ? `
+            <div class="field">
+              <div class="label">📱 Telefone:</div>
+              <div class="value">${data.phone}</div>
+            </div>
+            ` : ''}
+            
+            <div class="field">
+              <div class="label">📋 Assunto:</div>
+              <div class="value">${this.getSubjectLabel(data.subject)}</div>
+            </div>
+            
+            <div class="field">
+              <div class="label">💬 Mensagem:</div>
+              <div class="value">${data.message.replace(/\n/g, '<br>')}</div>
+            </div>
+          </div>
+          <div class="footer">
+            <p>Esta mensagem foi enviada através do formulário de contato do ServiFlex</p>
+            <p>Data: ${new Date().toLocaleString('pt-BR')}</p>
           </div>
         </div>
-        <div style="background: #e5e7eb; padding: 20px; text-align: center; color: #6b7280; font-size: 14px;">
-          <p>ServiFlex - Conectando você aos melhores profissionais</p>
-          <p style="margin-top: 10px;">
-            <a href="https://serviflex.com" style="color: #2563EB; text-decoration: none;">Acessar Plataforma</a>
-          </p>
-        </div>
-      </div>
+      </body>
+      </html>
     `;
-
-    await this.sendEmail({
-      to: professionalEmail,
-      subject,
-      html,
-    });
   }
 
   /**
-   * Envia email de nova solicitação
+   * Obter label do assunto
    */
-  async sendNewRequestEmail(
-    professionalEmail: string,
-    professionalName: string,
-    clientName: string,
-    serviceType: string
-  ): Promise<void> {
-    const subject = "🔔 Nova Solicitação de Serviço - ServiFlex";
+  private getSubjectLabel(subject: string): string {
+    const labels: { [key: string]: string } = {
+      duvida: '❓ Dúvida',
+      suporte: '🛠️ Suporte Técnico',
+      parceria: '🤝 Parceria',
+      sugestao: '💡 Sugestão',
+      reclamacao: '⚠️ Reclamação',
+    };
+    return labels[subject] || subject;
+  }
 
-    const html = `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-        <div style="background: linear-gradient(135deg, #2563EB 0%, #1e40af 100%); padding: 30px; text-align: center;">
-          <h1 style="color: white; margin: 0;">🔔 Nova Solicitação!</h1>
-        </div>
-        <div style="padding: 30px; background: #f9fafb;">
-          <h2 style="color: #1f2937;">Olá ${professionalName}!</h2>
-          <p style="color: #4b5563; font-size: 16px; line-height: 1.6;">
-            <strong>${clientName}</strong> solicitou um serviço de <strong>${serviceType}</strong>.
-          </p>
-          <div style="background: #dbeafe; border-left: 4px solid #2563EB; padding: 15px; margin: 20px 0; border-radius: 8px;">
-            <p style="color: #1e40af; margin: 0;">
-              <strong>Ação necessária:</strong><br>
-              Acesse a plataforma para aceitar ou recusar esta solicitação.
-            </p>
-          </div>
-          <div style="text-align: center; margin: 30px 0;">
-            <a href="https://serviflex.com/profissional/servicos" 
-               style="background: #2563EB; color: white; padding: 15px 30px; text-decoration: none; border-radius: 8px; display: inline-block; font-weight: bold;">
-              Ver Solicitação
-            </a>
-          </div>
-        </div>
-        <div style="background: #e5e7eb; padding: 20px; text-align: center; color: #6b7280; font-size: 14px;">
-          <p>ServiFlex - Conectando você aos melhores profissionais</p>
-        </div>
-      </div>
-    `;
-
-    await this.sendEmail({
-      to: professionalEmail,
-      subject,
-      html,
-    });
+  /**
+   * Buscar mensagens de contato (para admin)
+   */
+  async getContactMessages() {
+    // Implementar se necessário
   }
 }
 

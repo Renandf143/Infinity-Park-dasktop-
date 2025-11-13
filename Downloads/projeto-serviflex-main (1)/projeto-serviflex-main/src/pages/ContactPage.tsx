@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Header } from '../components/Header';
 import { Footer } from '../components/Footer';
-import { MailIcon, PhoneIcon, MapPinIcon, ClockIcon, SendIcon, CheckCircleIcon } from 'lucide-react';
+import { MailIcon, PhoneIcon, MapPinIcon, ClockIcon, SendIcon, CheckCircleIcon, AlertCircleIcon } from 'lucide-react';
+import { emailService } from '../services/emailService';
+
 export function ContactPage() {
   const [formData, setFormData] = useState({
     name: '',
@@ -11,19 +13,40 @@ export function ContactPage() {
     message: ''
   });
   const [submitted, setSubmitted] = useState(false);
-  const handleSubmit = (e: React.FormEvent) => {
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(false);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setFormData({
-        name: '',
-        email: '',
-        phone: '',
-        subject: '',
-        message: ''
-      });
-    }, 3000);
+    setSubmitting(true);
+    setError(false);
+
+    try {
+      const success = await emailService.sendContactMessage(formData);
+      
+      if (success) {
+        setSubmitted(true);
+        setTimeout(() => {
+          setSubmitted(false);
+          setFormData({
+            name: '',
+            email: '',
+            phone: '',
+            subject: '',
+            message: ''
+          });
+        }, 5000);
+      } else {
+        setError(true);
+        setTimeout(() => setError(false), 5000);
+      }
+    } catch (err) {
+      console.error('Erro ao enviar mensagem:', err);
+      setError(true);
+      setTimeout(() => setError(false), 5000);
+    } finally {
+      setSubmitting(false);
+    }
   };
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     setFormData(prev => ({
@@ -31,20 +54,25 @@ export function ContactPage() {
       [e.target.name]: e.target.value
     }));
   };
+  // Informações da empresa vindas do .env
+  const companyEmail = import.meta.env.VITE_COMPANY_EMAIL || 'suporteserviflix@gmail.com';
+  const companyPhone = import.meta.env.VITE_COMPANY_PHONE || '(11) 3000-0000';
+  const companyAddress = import.meta.env.VITE_COMPANY_ADDRESS || 'Av. Paulista, 1000 - São Paulo, SP';
+
   const contactInfo = [{
     icon: MailIcon,
     title: 'Email',
-    content: 'contato@serviflix.com.br',
-    link: 'mailto:contato@serviflix.com.br'
+    content: companyEmail,
+    link: `mailto:${companyEmail}`
   }, {
     icon: PhoneIcon,
     title: 'Telefone',
-    content: '(11) 3000-0000',
-    link: 'tel:+551130000000'
+    content: companyPhone,
+    link: `tel:${companyPhone.replace(/\D/g, '')}`
   }, {
     icon: MapPinIcon,
     title: 'Endereço',
-    content: 'Av. Paulista, 1000 - São Paulo, SP',
+    content: companyAddress,
     link: '#'
   }, {
     icon: ClockIcon,
@@ -94,9 +122,28 @@ export function ContactPage() {
                   <h3 className="text-2xl font-bold text-[#1E293B] mb-2">
                     Mensagem Enviada!
                   </h3>
-                  <p className="text-gray-600 text-center">
+                  <p className="text-gray-600 text-center mb-2">
                     Obrigado pelo contato. Responderemos em breve.
                   </p>
+                  <p className="text-sm text-gray-500 text-center">
+                    Enviamos uma cópia para: <strong>{companyEmail}</strong>
+                  </p>
+                </div> : error ? <div className="flex flex-col items-center justify-center py-12">
+                  <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mb-6">
+                    <AlertCircleIcon className="w-10 h-10 text-red-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-[#1E293B] mb-2">
+                    Erro ao Enviar
+                  </h3>
+                  <p className="text-gray-600 text-center mb-4">
+                    Ocorreu um erro ao enviar sua mensagem. Tente novamente.
+                  </p>
+                  <button
+                    onClick={() => setError(false)}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Tentar Novamente
+                  </button>
                 </div> : <form onSubmit={handleSubmit} className="space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
@@ -139,9 +186,22 @@ export function ContactPage() {
                     </label>
                     <textarea name="message" value={formData.message} onChange={handleChange} required rows={6} className="w-full px-4 py-3 border-2 border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-[#2563EB] focus:border-transparent transition-all resize-none" placeholder="Descreva sua mensagem..." />
                   </div>
-                  <button type="submit" className="w-full px-8 py-4 bg-gradient-to-r from-[#2563EB] to-[#1E40AF] text-white rounded-xl font-semibold hover:shadow-xl transition-all transform hover:scale-105 flex items-center justify-center gap-2">
-                    Enviar Mensagem
-                    <SendIcon className="w-5 h-5" />
+                  <button 
+                    type="submit" 
+                    disabled={submitting}
+                    className="w-full px-8 py-4 bg-gradient-to-r from-[#2563EB] to-[#1E40AF] text-white rounded-xl font-semibold hover:shadow-xl transition-all transform hover:scale-105 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                  >
+                    {submitting ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        Enviar Mensagem
+                        <SendIcon className="w-5 h-5" />
+                      </>
+                    )}
                   </button>
                 </form>}
             </div>

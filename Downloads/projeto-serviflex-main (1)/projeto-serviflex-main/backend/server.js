@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import { MongoClient } from 'mongodb';
 import userRoutes from './routes/users.js';
+import fileRoutes from './routes/files.js';
 
 // Configurar variáveis de ambiente
 dotenv.config();
@@ -38,6 +39,7 @@ async function connectDB() {
 
 // Rotas da API
 app.use('/api/users', userRoutes);
+app.use('/api/files', fileRoutes); // 📁 Rota para GridFS
 
 // 🔍 GET - Buscar todos os profissionais
 app.get('/api/professionals', async (req, res) => {

@@ -45,6 +45,7 @@ import {
 } from "lucide-react";
 import { RealtimeMap } from "../components/RealtimeMap";
 import { useRealtimeLocation } from "../hooks/useRealtimeLocation";
+import { ProfessionalAvailabilityDisplay } from "../components/ProfessionalAvailabilityDisplay";
 
 export function ProfessionalDetailPage() {
   const { professionalId } = useParams<{ professionalId: string }>();
@@ -380,10 +381,10 @@ export function ProfessionalDetailPage() {
           <div className="flex items-start gap-6">
             {/* Avatar */}
             <div className="flex-shrink-0">
-              {professional.user?.photoUrl || professional.photoUrl ? (
+              {(professional.user?.photoUrl || professional.photoUrl) ? (
                 <img
                   src={professional.user?.photoUrl || professional.photoUrl || ''}
-                  alt={professional.user?.displayName || professional.name}
+                  alt={professional.displayName || professional.user?.displayName || 'Profissional'}
                   className="w-24 h-24 rounded-full object-cover border-4 border-white/20"
                 />
               ) : (
@@ -396,7 +397,7 @@ export function ProfessionalDetailPage() {
             {/* Info */}
             <div className="flex-1">
               <h1 className="text-2xl font-bold mb-1">
-                {professional.user.displayName}
+                {professional.displayName || professional.user?.displayName || 'Profissional'}
               </h1>
 
               <p className="text-base text-white/90 mb-3">
@@ -641,42 +642,10 @@ export function ProfessionalDetailPage() {
               </div>
             </div>
 
-            {/* Disponibilidade */}
-            <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100">
-              <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                <ClockIcon className="w-5 h-5 text-[#1E40AF]" />
-                Disponibilidade
-              </h2>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                {[
-                  { day: "Segunda-feira", hours: "08:00 - 18:00", available: true },
-                  { day: "Terça-feira", hours: "08:00 - 18:00", available: true },
-                  { day: "Quarta-feira", hours: "08:00 - 18:00", available: true },
-                  { day: "Quinta-feira", hours: "08:00 - 18:00", available: true },
-                  { day: "Sexta-feira", hours: "08:00 - 18:00", available: true },
-                  { day: "Sábado", hours: "08:00 - 12:00", available: true },
-                  { day: "Domingo", hours: "Fechado", available: false },
-                ].map((schedule, index) => (
-                  <div
-                    key={index}
-                    className={`flex items-center justify-between p-3 rounded-lg border ${
-                      schedule.available
-                        ? "bg-green-50 border-green-200"
-                        : "bg-gray-50 border-gray-200"
-                    }`}
-                  >
-                    <span className="font-medium text-gray-900">{schedule.day}</span>
-                    <span
-                      className={`text-sm font-semibold ${
-                        schedule.available ? "text-green-700" : "text-gray-500"
-                      }`}
-                    >
-                      {schedule.hours}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
+            {/* Disponibilidade em Tempo Real */}
+            {professionalId && (
+              <ProfessionalAvailabilityDisplay professionalId={professionalId} />
+            )}
 
             {/* Localização e Rastreamento em Tempo Real */}
             {professional.location && (
@@ -803,7 +772,7 @@ export function ProfessionalDetailPage() {
                     </div>
                   </div>
                 )}
-                {professional.user.email && (
+                {professional.user?.email && (
                   <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
                     <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
                       <MailIcon className="w-5 h-5 text-blue-600" />
@@ -1375,8 +1344,8 @@ export function ProfessionalDetailPage() {
           isOpen={showChatModal}
           onClose={() => setShowChatModal(false)}
           professionalId={professionalId!}
-          professionalName={professional.user.displayName}
-          professionalPhoto={professional.user.photoUrl}
+          professionalName={professional.user?.displayName || professional.displayName || "Profissional"}
+          professionalPhoto={professional.user?.photoUrl || professional.photoUrl || ""}
           currentUserId={user.uid}
           currentUserName={user.displayName || "Usuário"}
           currentUserPhoto={user.photoURL || ""}
@@ -1388,7 +1357,7 @@ export function ProfessionalDetailPage() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl p-6 max-w-md w-full">
             <h3 className="text-xl font-bold text-gray-900 mb-4">
-              Avaliar {professional.user.displayName}
+              Avaliar {professional.user?.displayName || professional.displayName || "Profissional"}
             </h3>
 
             <div className="space-y-4">
@@ -1502,7 +1471,7 @@ export function ProfessionalDetailPage() {
                   <Share2Icon className="w-10 h-10 text-white" />
                 </div>
                 <p className="text-gray-600 mb-4">
-                  Compartilhe o perfil de {professional.user.displayName}
+                  Compartilhe o perfil de {professional.user?.displayName || professional.displayName || "Profissional"}
                 </p>
               </div>
 
@@ -1543,7 +1512,7 @@ export function ProfessionalDetailPage() {
                   onClick={() => {
                     window.open(
                       `https://wa.me/?text=${encodeURIComponent(
-                        `Confira o perfil de ${professional.user.displayName}: ${shareLink}`
+                        `Confira o perfil de ${professional.user?.displayName || professional.displayName || "Profissional"}: ${shareLink}`
                       )}`,
                       "_blank"
                     );

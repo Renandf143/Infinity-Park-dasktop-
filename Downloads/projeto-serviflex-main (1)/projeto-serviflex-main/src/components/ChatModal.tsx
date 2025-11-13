@@ -305,6 +305,40 @@ export function ChatModal({
                         : "bg-white text-gray-900 border border-gray-200"
                     }`}
                   >
+                    {/* Renderizar imagem */}
+                    {message.type === 'image' && message.fileUrl && (
+                      <div className="mb-2">
+                        <img
+                          src={message.fileUrl}
+                          alt={message.fileName || 'Imagem'}
+                          className="max-w-full rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                          onClick={() => window.open(message.fileUrl, '_blank')}
+                        />
+                      </div>
+                    )}
+
+                    {/* Renderizar arquivo */}
+                    {message.type === 'file' && message.fileUrl && (
+                      <a
+                        href={message.fileUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={`flex items-center gap-2 p-2 rounded-lg mb-2 ${
+                          isCurrentUser ? 'bg-white/10' : 'bg-gray-100'
+                        }`}
+                      >
+                        <Paperclip className="w-4 h-4" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium truncate">{message.fileName}</p>
+                          {message.fileSize && (
+                            <p className="text-xs opacity-70">
+                              {(message.fileSize / 1024).toFixed(1)} KB
+                            </p>
+                          )}
+                        </div>
+                      </a>
+                    )}
+
                     <p className="text-sm break-words whitespace-pre-wrap">{message.text}</p>
                     <div className={`flex items-center justify-between gap-2 mt-1`}>
                       <p
@@ -323,7 +357,7 @@ export function ChatModal({
                       </p>
                       {isCurrentUser && (
                         <span className="flex-shrink-0">
-                          <CheckCheck className="w-4 h-4 text-blue-300" />
+                          <CheckCheck className={`w-4 h-4 ${message.read ? 'text-blue-300' : 'text-white/50'}`} />
                         </span>
                       )}
                     </div>
@@ -366,22 +400,64 @@ export function ChatModal({
               >
                 <Smile className="w-5 h-5" />
               </button>
-              <button
-                type="button"
-                onClick={() => alert('Funcionalidade de anexo em desenvolvimento')}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Anexar arquivo"
-              >
+              <label className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer" title="Anexar arquivo">
                 <Paperclip className="w-5 h-5" />
-              </button>
-              <button
-                type="button"
-                onClick={() => alert('Funcionalidade de imagem em desenvolvimento')}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
-                title="Enviar imagem"
-              >
+                <input
+                  type="file"
+                  className="hidden"
+                  accept=".pdf,.doc,.docx,.xls,.xlsx,.txt"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setSending(true);
+                      try {
+                        await chatService.sendFile(
+                          chatId,
+                          currentUserId,
+                          currentUserName,
+                          currentUserPhoto || "",
+                          file
+                        );
+                      } catch (error) {
+                        console.error('Erro ao enviar arquivo:', error);
+                        alert('Erro ao enviar arquivo');
+                      } finally {
+                        setSending(false);
+                        e.target.value = '';
+                      }
+                    }
+                  }}
+                />
+              </label>
+              <label className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer" title="Enviar imagem">
                 <ImageIcon className="w-5 h-5" />
-              </button>
+                <input
+                  type="file"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      setSending(true);
+                      try {
+                        await chatService.sendImage(
+                          chatId,
+                          currentUserId,
+                          currentUserName,
+                          currentUserPhoto || "",
+                          file
+                        );
+                      } catch (error) {
+                        console.error('Erro ao enviar imagem:', error);
+                        alert('Erro ao enviar imagem');
+                      } finally {
+                        setSending(false);
+                        e.target.value = '';
+                      }
+                    }
+                  }}
+                />
+              </label>
             </div>
 
             {/* Input de mensagem */}

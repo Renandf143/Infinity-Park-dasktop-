@@ -11,6 +11,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import { ServiceProviderProfile, User } from '../types/firestore';
+import { availabilityService } from './availabilityService';
 
 /**
  * 👷 SERVIÇO DE PROFISSIONAIS
@@ -20,7 +21,7 @@ class ProfessionalService {
   /**
    * Buscar todos os profissionais
    */
-  async getAllProfessionals(): Promise<ServiceProviderProfile[]> {
+  async getAllProfessionals(filterByTodayAvailability: boolean = false): Promise<ServiceProviderProfile[]> {
     try {
       const providersRef = collection(db, 'serviceProviders');
       const q = query(providersRef, orderBy('rating', 'desc'), limit(50));
@@ -30,6 +31,15 @@ class ProfessionalService {
       
       for (const docSnap of snapshot.docs) {
         const providerData = docSnap.data();
+        
+        // Filtrar por disponibilidade do dia atual se solicitado
+        if (filterByTodayAvailability) {
+          const isAvailableToday = await this.isProfessionalAvailableToday(docSnap.id);
+          if (!isAvailableToday) {
+            console.log(`⏭️ Profissional ${providerData.displayName} não disponível hoje`);
+            continue;
+          }
+        }
         
         // Buscar dados do usuário
         const userDoc = await getDoc(doc(db, 'users', providerData.userId));
@@ -50,6 +60,39 @@ class ProfessionalService {
     } catch (error) {
       console.error('❌ Erro ao buscar profissionais:', error);
       return [];
+    }
+  }
+  
+  /**
+   * Verificar se profissional está disponível hoje
+   */
+  async isProfessionalAvailableToday(professionalId: string): Promise<boolean> {
+    try {
+      const settings = await availabilityService.getAvailability(professionalId);
+      if (!settings) return false;
+      
+      // Obter dia da semana atual
+      const today = new Date();
+      const dayOfWeek = today.getDay();
+      const dayNames = ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'];
+      const todayName = dayNames[dayOfWeek] as keyof typeof settings.weekSchedule;
+      
+      // Verificar se o dia está habilitado
+      const daySchedule = settings.weekSchedule[todayName];
+      if (!daySchedule || !daySchedule.enabled || daySchedule.slots.length === 0) {
+        return false;
+      }
+      
+      // Verificar se hoje não está bloqueado
+      const todayStr = today.toISOString().split('T')[0];
+      if (settings.blockedDates.includes(todayStr)) {
+        return false;
+      }
+      
+      return true;
+    } catch (error) {
+      console.error('❌ Erro ao verificar disponibilidade:', error);
+      return false;
     }
   }
   
@@ -218,7 +261,7 @@ class ProfessionalService {
   /**
    * Buscar profissionais por categoria (slug)
    */
-  async getProfessionalsByCategory(categorySlug: string): Promise<ServiceProviderProfile[]> {
+  async getProfessionalsByCategory(categorySlug: string, filterByTodayAvailability: boolean = false): Promise<ServiceProviderProfile[]> {
     try {
       console.log('🔍 Buscando profissionais para categoria:', categorySlug);
       const providersRef = collection(db, 'serviceProviders');
@@ -270,6 +313,15 @@ class ProfessionalService {
             buscando: categorySlug
           });
           continue;
+        }
+        
+        // Filtrar por disponibilidade do dia atual se solicitado
+        if (filterByTodayAvailability) {
+          const isAvailableToday = await this.isProfessionalAvailableToday(docSnap.id);
+          if (!isAvailableToday) {
+            console.log(`⏭️ Profissional ${providerData.displayName} não disponível hoje`);
+            continue;
+          }
         }
         
         console.log('✅ Profissional corresponde:', {
